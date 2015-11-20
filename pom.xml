@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- the base -->
+    <groupId>de.yaio.services</groupId>
+    <artifactId>yaio-dms-service</artifactId>
+    <version>0.1.0</version>
+    <name>Yaio-DMS-service</name>
+    <description>YourAllInOne DMS-Service</description>
+    <url>https://github.com/das-praktische-schreinerlein/yaio-dms-service</url>
+    <organization>
+        <name>Your-All-In-One</name>
+        <url>http://www.your-all-in-one.de</url>
+    </organization>
+
+    <!-- for spring boot -->
+    <parent>
+        <groupId>de.yaio</groupId>
+        <artifactId>yaio-pom-webstarter</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <properties>
+        <!--
+          ##################
+          # Packaging defaults
+          ##################
+         -->
+        <!-- packaging - change it with "mvn package -Dpackaging.type=jar" -->
+        <packaging.type>jar</packaging.type>
+        <!-- assembly a jar with all dependencies - activate it with "mvn package -Dpackaging.assembly-phase=package" -->
+        <packaging.assembly-phase>none</packaging.assembly-phase>
+        <!-- shade to an ueber-jar - activate it with "mvn package -Dpackaging.shade-phase=package" -->
+        <packaging.shade-phase>none</packaging.shade-phase>
+        <!-- prepare for springboot - activate it with "mvn package -Dpackaging.springboot-phase=package" -->
+        <packaging.springboot-phase>none</packaging.springboot-phase>
+
+        <!--
+          ##################
+          # Projectdata
+          ##################
+         -->
+        <!--  project -->
+        <start-class>de.yaio.services.dms.DMSApplication</start-class>
+    </properties>
+
+    <!-- packaging jar or war and version -->
+    <packaging>${packaging.type}</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+    </build>
+</project>

@@ -42,7 +42,7 @@ import org.springframework.stereotype.Component;
  */
 @EnableWebSecurity
 @Component
-@Order(40)
+@Order(41)
 public class DMSWebSecurityConfig extends WebSecurityConfigurerAdapter {
     private static final Logger logger = Logger.getLogger(DMSWebSecurityConfig.class);
     
@@ -51,7 +51,7 @@ public class DMSWebSecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @EnableWebSecurity
     @Configuration
-    @Order(9)
+    @Order(49)
     public static class WebshotServiceSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         @Value("${yaio-dms-service.baseurl}")
         protected String dmsBaseUrl;

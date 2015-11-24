@@ -27,7 +27,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
-import org.springframework.security.web.util.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
 
 /** 
@@ -42,7 +42,6 @@ import org.springframework.stereotype.Component;
  */
 @EnableWebSecurity
 @Component
-@Order(41)
 public class DMSWebSecurityConfig extends WebSecurityConfigurerAdapter {
     private static final Logger logger = Logger.getLogger(DMSWebSecurityConfig.class);
     
@@ -51,7 +50,7 @@ public class DMSWebSecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @EnableWebSecurity
     @Configuration
-    @Order(49)
+    @Order(1)
     public static class WebshotServiceSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         @Value("${yaio-dms-service.baseurl}")
         protected String dmsBaseUrl;

@@ -13,8 +13,14 @@
  */
 package de.yaio.services.dms;
 
+import javax.servlet.MultipartConfigElement;
+
+import org.apache.tomcat.util.http.fileupload.FileUpload;
+import org.apache.tomcat.util.http.fileupload.FileUploadBase;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.context.embedded.MultipartConfigFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -42,5 +48,21 @@ public class DMSApplication {
      */
     public static void main(String[] args) {
         SpringApplication.run(DMSApplication.class, args);
+    }
+
+    @Bean
+    MultipartConfigElement configureMultipartConfigElement() {
+        // spring-config
+        MultipartConfigFactory factory = new MultipartConfigFactory();
+        factory.setMaxFileSize(System.getProperty("yaio.server.maxfilesize", "128kb"));
+        factory.setMaxRequestSize(System.getProperty("yaio.server.maxrequestsize", "128kb"));
+        MultipartConfigElement config = factory.createMultipartConfig();
+        
+        // tomcat-config
+        FileUploadBase tomcatConfig = new FileUpload();
+        tomcatConfig.setFileSizeMax(config.getMaxFileSize());
+        tomcatConfig.setSizeMax(config.getMaxFileSize());
+
+        return config;
     }
 }

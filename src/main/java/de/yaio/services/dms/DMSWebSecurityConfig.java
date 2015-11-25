@@ -51,7 +51,7 @@ public class DMSWebSecurityConfig extends WebSecurityConfigurerAdapter {
     @EnableWebSecurity
     @Configuration
     @Order(1)
-    public static class WebshotServiceSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+    public static class DMSServiceSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         @Value("${yaio-dms-service.baseurl}")
         protected String dmsBaseUrl;
 

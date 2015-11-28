@@ -6,7 +6,7 @@
     <!-- the base -->
     <groupId>de.yaio.services</groupId>
     <artifactId>yaio-dms-service</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <name>Yaio-DMS-service</name>
     <description>YourAllInOne DMS-Service</description>
     <url>https://github.com/das-praktische-schreinerlein/yaio-dms-service</url>

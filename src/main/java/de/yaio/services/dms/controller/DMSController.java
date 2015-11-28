@@ -76,12 +76,12 @@ public class DMSController {
             StorageResourceVersion metaData = storageProvider.getMetaData(appId, id, version);
             File file = storageProvider.getResource(appId, id, version).toFile();
             String fileType = fileTypeMap.getContentType(file.getName());
-            
+
             MediaType mimeType = MediaType.valueOf(fileType);
             response.setContentType(mimeType.getType());
             response.setContentLength((new Long(file.length()).intValue()));
             response.setHeader("content-Disposition", "attachment; filename=" + file.getName());// "attachment;filename=test.xls"
-            
+
             // copy it to response's OutputStream
             IOUtils.copyLarge(new FileInputStream(file), response.getOutputStream());
         } catch (IOException e) {
@@ -106,9 +106,9 @@ public class DMSController {
     @RequestMapping(value="/getmetaversion/{appId}/{id}/{version}", 
                     method=RequestMethod.GET)
     public @ResponseBody StorageResourceVersion handleFileMetaDataByVersion(@PathVariable("appId") String appId,
-                                       @PathVariable(value="id") String id,
-                                       @PathVariable(value="version") Integer version,
-                                       HttpServletResponse response) throws IOException {
+                                                                            @PathVariable(value="id") String id,
+                                                                            @PathVariable(value="version") Integer version,
+                                                                            HttpServletResponse response) throws IOException {
         StorageResourceVersion metaData = null;;
         try {
             metaData = storageProvider.getMetaData(appId, id, version);
@@ -117,7 +117,7 @@ public class DMSController {
             response.setStatus(404);
             response.getWriter().append("error while reading:" + e.getMessage());
         }
-        
+
         return metaData;
     }
 
@@ -135,8 +135,8 @@ public class DMSController {
     @RequestMapping(value="/getmeta/{appId}/{id}", 
                     method=RequestMethod.GET)
     public @ResponseBody StorageResource handleFileMetaDataById(@PathVariable("appId") String appId,
-                                       @PathVariable(value="id") String id,
-                                       HttpServletResponse response) throws IOException {
+                                                                @PathVariable(value="id") String id,
+                                                                HttpServletResponse response) throws IOException {
         StorageResource metaData = null;;
         try {
             metaData = storageProvider.getMetaData(appId, id);
@@ -145,7 +145,7 @@ public class DMSController {
             response.setStatus(404);
             response.getWriter().append("error while reading:" + e.getMessage());
         }
-        
+
         return metaData;
     }
 

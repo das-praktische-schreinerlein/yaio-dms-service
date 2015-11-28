@@ -10,8 +10,11 @@ A webservice with document-management-functionality.
 
         mvn install
         mvn spring-boot:run
-        curl --user dms:secret -X POST http://localhost:8083/services/dms/add -F 'appId=yaio-playground' -F 'id=876786876876876876' -F 'origFileName=testfile.xxx' -F 'file=@/cygdrive/d/tmp/readme.txt'
-        curl --user dms:secret -X GET http://localhost:8083/services/dms/get/yaio-playground/876786876876876876/1 
+        curl --user admin:secret -X POST http://localhost:8083/services/dms/add -F 'appId=yaio-playground' -F 'id=8767868768768768769' -F 'origFileName=testfile.xxx' -F 'file=@/cygdrive/d/tmp/readme.txt'
+        curl --user admin:secret -X POST http://localhost:8083/services/dms/update -F 'appId=yaio-playground' -F 'id=8767868768768768769' -F 'origFileName=testfile.xxx' -F 'file=@/cygdrive/d/tmp/readme.txt'
+        curl --user admin:secret -X GET http://localhost:8083/services/dms/getmeta/yaio-playground/8767868768768768769
+        curl --user admin:secret -X GET http://localhost:8083/services/dms/getmetaversion/yaio-playground/8767868768768768769/0
+        curl --user admin:secret -X GET http://localhost:8083/services/dms/get/yaio-playground/8767868768768768769/0
 
 - to build it as standalone-jar with all dependencies take a look at pom.xml
 

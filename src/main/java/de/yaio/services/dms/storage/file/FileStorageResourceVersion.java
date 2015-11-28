@@ -34,15 +34,15 @@ public class FileStorageResourceVersion implements StorageResourceVersion {
     public Date created;
 
     public FileStorageResourceVersion() {
-        
+
     }
     public FileStorageResourceVersion(Integer version, String origName, String resName, Date created) {
-                super();
-                this.version = version;
-                this.origName = origName;
-                this.resName = resName;
-                this.created = created;
-            }
+        super();
+        this.version = version;
+        this.origName = origName;
+        this.resName = resName;
+        this.created = created;
+    }
 
     public Integer getVersion() {
         return this.version;

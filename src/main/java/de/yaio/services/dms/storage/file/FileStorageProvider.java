@@ -27,15 +27,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-
 import de.yaio.services.dms.storage.StorageProvider;
 import de.yaio.services.dms.storage.StorageResource;
 import de.yaio.services.dms.storage.StorageResourceVersion;
+import de.yaio.services.dms.storage.StorageUtils;
 
 /** 
  * services for document-storage
@@ -52,16 +47,13 @@ public class FileStorageProvider implements StorageProvider {
     
     private static String VERSION_ID_FS1 = "FS1_";
 
-    // Jackson
+    // StorageUtils
     @Autowired
-    protected ObjectMapper mapper;
+    protected StorageUtils storageUtils;
     
     @Value("${yaio-dms-service.storagebasedir}")
     protected String storageBaseDir;
 
-    /* (non-Javadoc)
-     * @see de.yaio.services.filestorage.modell.StorageProvider#add(java.lang.String, java.lang.String, java.io.InputStream)
-     */
     @Override
     public StorageResource add(String appId, String srcId, String origName, InputStream uploadFile) throws IOException {
         // create id
@@ -91,9 +83,6 @@ public class FileStorageProvider implements StorageProvider {
         return resource;
     }
 
-    /* (non-Javadoc)
-     * @see de.yaio.services.filestorage.modell.StorageProvider#update(java.lang.String, java.lang.String, java.io.InputStream)
-     */
     @Override
     public StorageResource update(String appId, String dmsId, String origName, InputStream uploadFile) throws IOException {
         // check dirStructure
@@ -122,9 +111,6 @@ public class FileStorageProvider implements StorageProvider {
         return resource;
     }
 
-    /* (non-Javadoc)
-     * @see de.yaio.services.filestorage.modell.StorageProvider#resetToVersion(java.lang.String, java.lang.Integer)
-     */
     @Override
     public StorageResource resetToVersion(String appId, String dmsId, Integer targetVersion) throws IOException {
         // check dirStructure
@@ -161,9 +147,6 @@ public class FileStorageProvider implements StorageProvider {
         return resource;
     }
 
-    /* (non-Javadoc)
-     * @see de.yaio.services.filestorage.modell.StorageProvider#delete(java.lang.String)
-     */
     @Override
     public void delete(String appId, String dmsId) throws IOException {
         // check dirStructure
@@ -189,9 +172,6 @@ public class FileStorageProvider implements StorageProvider {
         dirStructure.delete();
     }
 
-    /* (non-Javadoc)
-     * @see de.yaio.services.filestorage.modell.StorageProvider#getMetaData(java.lang.String)
-     */
     @Override
     public StorageResource getMetaData(String appId, String dmsId) throws IOException {
         // check dirStructure
@@ -205,9 +185,6 @@ public class FileStorageProvider implements StorageProvider {
         return resource;
     }
 
-    /* (non-Javadoc)
-     * @see de.yaio.services.filestorage.modell.StorageProvider#getMetaData(java.lang.String, java.lang.Integer)
-     */
     @Override
     public StorageResourceVersion getMetaData(String appId, String dmsId, Integer requestedVersion) throws IOException {
         // check dirStructure
@@ -241,16 +218,6 @@ public class FileStorageProvider implements StorageProvider {
         return getResourceFile(dirStructure, resourceVersion.getResName());
     }
 
-    protected String normalizeFileName(String fileName) {
-        String newFileName = fileName;
-        // replace all . but the last as extension
-        newFileName = fileName.replaceAll("\\.(?=.*\\.)", "_");
-        
-        // replace all not matching characters
-        newFileName = fileName.replaceAll("[^a-zA-Z0-9-.]", "_");
-        return newFileName;
-    }
-
     protected String convertDMSIdToDirStructure(String appId, String dmsId) throws IOException {
         if (dmsId.startsWith(VERSION_ID_FS1)) {
             return convertDMSIdToDirStructure_FS1(appId, dmsId);
@@ -264,11 +231,11 @@ public class FileStorageProvider implements StorageProvider {
         }
         
         // set basepath
-        String basePath = storageBaseDir + File.separator + normalizeFileName(appId);
+        String basePath = storageBaseDir + File.separator + storageUtils.normalizeFileName(appId);
         
         // normalize id and create a structure of 4 chars per dir
         String fileName = dmsId.substring(VERSION_ID_FS1.length());
-        fileName = normalizeFileName(fileName);
+        fileName = storageUtils.normalizeFileName(fileName);
         String[] separatedFileName = fileName.split("(?<=\\G....)");
         fileName = StringUtils.arrayToDelimitedString(separatedFileName, File.separator);
         
@@ -276,11 +243,11 @@ public class FileStorageProvider implements StorageProvider {
     }
 
     protected String convertToResourceFileName(String origName, int version) {
-        return normalizeFileName("v" + version + "-" + origName);
+        return storageUtils.normalizeFileName("v" + version + "-" + origName);
     }
 
     protected String convertSrcIdToDMSId_FS1(String srcId) {
-        return VERSION_ID_FS1 + Base64Utils.encodeToString(normalizeFileName(srcId).getBytes());
+        return VERSION_ID_FS1 + Base64Utils.encodeToString(storageUtils.normalizeFileName(srcId).getBytes());
     }
     
     protected File getDirStructure(String appId, String dmsId) throws IOException {
@@ -303,8 +270,9 @@ public class FileStorageProvider implements StorageProvider {
         if (create && metadataFile.exists()) {
             throw new IOException("error metadata document already exists HTTP: 409 Conflict");
         }
-        ObjectWriter writer = mapper.writer();
-        String metaJson = writer.writeValueAsString(resource);
+        
+        String metaJson = storageUtils.serializeMetaDataToJson(resource);
+        
         FileUtils.writeStringToFile(metadataFile, metaJson);
     }
 
@@ -312,21 +280,9 @@ public class FileStorageProvider implements StorageProvider {
         if (!metadataFile.exists()) {
             throw new IOException("error metadata document not exists HTTP: 404 Conflict");
         }
-        String metaJson = FileUtils.readFileToString(metadataFile);
-        // configure
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
-        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-        
-        // add deserializer
-        SimpleModule module = new SimpleModule("FileStorageResourceVersionDeserializer", new Version(1, 0, 0, null));
-        FileStorageResourceVersionDeserializer fileStorageResourceVersionDeserializer = new FileStorageResourceVersionDeserializer();
-        FileStorageResourceDeserializer fileStorageResourceDeserializer = new FileStorageResourceDeserializer();
-        module.addDeserializer(StorageResourceVersion.class, fileStorageResourceVersionDeserializer);
-        module.addDeserializer(StorageResource.class, fileStorageResourceDeserializer);
 
-        mapper.registerModule(module);
-        StorageResource resource = mapper.readValue(metaJson, FileStorageResource.class);
-        return resource;
+        String metaJson = FileUtils.readFileToString(metadataFile);
+        
+        return storageUtils.parseStorageResourceFromJson(metaJson);
     }
 }

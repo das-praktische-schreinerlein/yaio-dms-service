@@ -11,7 +11,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.yaio.services.dms.storage.file;
+package de.yaio.services.dms.storage;
 
 import java.io.IOException;
 
@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.yaio.services.dms.storage.StorageResourceVersion;
+import de.yaio.services.dms.storage.file.FileStorageResourceVersion;
 
 /** 
  * deserializer for FileStorageResourceVersion-nodes
@@ -35,7 +35,7 @@ import de.yaio.services.dms.storage.StorageResourceVersion;
  * @copyright                    Copyright (c) 2014, Michael Schreiner
  * @license                      http://mozilla.org/MPL/2.0/ Mozilla Public License 2.0
  */
-public class FileStorageResourceVersionDeserializer extends JsonDeserializer<StorageResourceVersion> {
+public class StorageResourceVersionDeserializer extends JsonDeserializer<StorageResourceVersion> {
 
     @Override
     public StorageResourceVersion deserialize(final JsonParser jsonParser, final DeserializationContext ctxt) throws IOException {

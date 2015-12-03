@@ -32,69 +32,69 @@ public interface StorageProvider {
     /**
      * create resource with that file
      * @param appId                  the appId of the store
-     * @param id                     id of the resource
+     * @param srcId                  srcId from client (based on that value the dmsId will be generated)
      * @param origName               original name
      * @param uploadFile             inputstream with the data
      * @return                       returns the metadata of the target resource
      * @throws IOException           if resource not exists
      */
-    public StorageResource add(String appId, String id, String origName, InputStream uploadFile) throws IOException;
+    public StorageResource add(String appId, String srcId, String origName, InputStream uploadFile) throws IOException;
     
     /**
      * update the requested resource with that file
      * @param appId                  the appId of the store
-     * @param id                     id of the resource
+     * @param dmsId                  dmsId of the resource
      * @param origName               original name
      * @param uploadFile             inputstream with the data
      * @return                       returns the metadata of the target resource
      * @throws IOException           if resource not exists
      */
-    public StorageResource update(String appId, String id, String origName, InputStream uploadFile) throws IOException;
+    public StorageResource update(String appId, String dmsId, String origName, InputStream uploadFile) throws IOException;
     
     /**
      * reset the requested resource to to this version
      * @param appId                  the appId of the store
-     * @param id                     id of the resource
+     * @param dmsId                  dmsId of the resource
      * @param targetVersion          version of the resource
      * @return                       returns the metadata of the target resource
      * @throws IOException           if resource not exists
      */
-    public StorageResource resetToVersion(String appId, String id, Integer targetVersion) throws IOException;
+    public StorageResource resetToVersion(String appId, String dmsId, Integer targetVersion) throws IOException;
     
     /**
      * delete all data of the requested resource
      * @param appId                  the appId of the store
-     * @param id                     id of the resource
+     * @param dmsId                  dmsId of the resource
      * @throws IOException           if resource not exists
      */
-    public void delete(String appId, String id) throws IOException;
-    
-    /**
-     * 
-     * @param appId                  the appId of the store
-     * @param id                     id of the resource
-     * @return                       returns the metadata of the requested resource
-     * @throws IOException           if resource not exists
-     */
-    public StorageResource getMetaData(String appId, String id) throws IOException;
+    public void delete(String appId, String dmsId) throws IOException;
     
     /**
      * returns metadata of the requested resource
      * @param appId                  the appId of the store
-     * @param id                     id of the resource
+     * @param dmsId                  dmsId of the resource
+     * @return                       returns the metadata of the requested resource
+     * @throws IOException           if resource not exists
+     */
+    public StorageResource getMetaData(String appId, String dmsId) throws IOException;
+    
+    /**
+     * returns metadata of the requested resource-version
+     * @param appId                  the appId of the store
+     * @param dmsId                  dmsId of the resource
      * @param requestedVersion       version of the resource
      * @return                       returns the metadata of the requested resource
      * @throws IOException           if resource not exists
      */
-    public StorageResourceVersion getMetaData(String appId, String id, Integer requestedVersion) throws IOException;
+    public StorageResourceVersion getMetaData(String appId, String dmsId, Integer requestedVersion) throws IOException;
     
     /**
      * returns the path of the requested resource
      * @param appId                  the appId of the store
-     * @param id                     id of the resource
+     * @param dmsId                  dmsId of the resource
      * @param requestedVersion       version of the resource
      * @return                       returns the path of the requested resource
      * @throws IOException           if resource not exists
      */
-    public Path getResource(String appId, String id, Integer requestedVersion) throws IOException;
+    public Path getResource(String appId, String dmsId, Integer requestedVersion) throws IOException;
 }

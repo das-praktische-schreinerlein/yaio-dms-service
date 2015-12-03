@@ -28,13 +28,15 @@ import java.util.Map;
  * @license                      http://mozilla.org/MPL/2.0/ Mozilla Public License 2.0
  */
 public interface StorageResource {
-    public String getId();
+    public String getDMSId();
+    public String getSrcId();
     public Integer getCurVersion();
     public Date getCreated();
     public Date getLastChanged();
     public Map<Integer , StorageResourceVersion> getVersions();
 
-    public void setId(String id);
+    public void setDMSId(String id);
+    public void setSrcId(String srcId);
     public void setCurVersion(Integer version);
     public void setCreated(Date created);
     public void setLastChanged(Date lastChanged);

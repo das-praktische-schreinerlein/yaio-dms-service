@@ -31,7 +31,8 @@ import de.yaio.services.dms.storage.StorageResourceVersion;
  * @license                      http://mozilla.org/MPL/2.0/ Mozilla Public License 2.0
  */
 public class FileStorageResource implements StorageResource {
-    protected String id;
+    protected String dmsId;
+    protected String srcId;
     protected Integer curVersion;
     protected Date created;
     protected Date lastChanged;
@@ -39,10 +40,11 @@ public class FileStorageResource implements StorageResource {
 
     public FileStorageResource() {
     }
-    public FileStorageResource(String id, Integer curVersion, Date created,
-                                Date lastChanged, HashMap<Integer , StorageResourceVersion> versions) {
+    public FileStorageResource(final String dmsId, final String srcId, final Integer curVersion, final Date created,
+                               final Date lastChanged, final HashMap<Integer, StorageResourceVersion> versions) {
         super();
-        this.id = id;
+        this.dmsId = dmsId;
+        this.srcId = srcId;
         this.curVersion = curVersion;
         this.created = created;
         this.lastChanged = lastChanged;
@@ -51,19 +53,27 @@ public class FileStorageResource implements StorageResource {
         }
     }
 
-    public String getId() {
-        return this.id;
+    public String getDMSId() {
+        return this.dmsId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setDMSId(final String id) {
+        this.dmsId = id;
+    }
+
+    public String getSrcId() {
+        return this.srcId;
+    }
+
+    public void setSrcId(final String srcId) {
+        this.srcId = srcId;
     }
 
     public Integer getCurVersion() {
         return this.curVersion;
     }
 
-    public void setCurVersion(Integer curVersion) {
+    public void setCurVersion(final Integer curVersion) {
         this.curVersion = curVersion;
     }
 
@@ -71,7 +81,7 @@ public class FileStorageResource implements StorageResource {
         return this.created;
     }
 
-    public void setCreated(Date created) {
+    public void setCreated(final Date created) {
         this.created = created;
     }
 
@@ -79,7 +89,7 @@ public class FileStorageResource implements StorageResource {
         return this.lastChanged;
     }
 
-    public void setLastChanged(Date lastChanged) {
+    public void setLastChanged(final Date lastChanged) {
         this.lastChanged = lastChanged;
     }
 
@@ -87,11 +97,11 @@ public class FileStorageResource implements StorageResource {
         return this.versions;
     }
 
-    public void setVersions(Map<Integer, StorageResourceVersion> resourceVersions) {
+    public void setVersions(final Map<Integer, StorageResourceVersion> resourceVersions) {
         this.versions = resourceVersions;
     }
 
-    public StorageResourceVersion getVersion(Integer version) {
+    public StorageResourceVersion getVersion(final Integer version) {
         return this.versions.get(version);
     }
 }

@@ -24,6 +24,8 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Base64Utils;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -47,6 +49,8 @@ import de.yaio.services.dms.storage.StorageResourceVersion;
  */
 @Service
 public class FileStorageProvider implements StorageProvider {
+    
+    private static String VERSION_ID_FS1 = "FS1_";
 
     // Jackson
     @Autowired
@@ -59,9 +63,12 @@ public class FileStorageProvider implements StorageProvider {
      * @see de.yaio.services.filestorage.modell.StorageProvider#add(java.lang.String, java.lang.String, java.io.InputStream)
      */
     @Override
-    public StorageResource add(String appId, String id, String origName, InputStream uploadFile) throws IOException {
+    public StorageResource add(String appId, String srcId, String origName, InputStream uploadFile) throws IOException {
+        // create id
+        String dmsId = convertSrcIdToDMSId_FS1(srcId);
+
         // check dirStructure
-        File dirStructure = getDirStructure(appId, id);
+        File dirStructure = getDirStructure(appId, dmsId);
         if (dirStructure.exists()) {
             throw new IOException("error document already exists HTTP: 409 Conflict");
         }
@@ -72,7 +79,7 @@ public class FileStorageProvider implements StorageProvider {
 
         // create resource
         StorageResourceVersion resourceVersion = new FileStorageResourceVersion(1, origName, resName, new Date());
-        StorageResource resource = new FileStorageResource(id, 1, new Date(), new Date(), null);
+        StorageResource resource = new FileStorageResource(dmsId, srcId, 1, new Date(), new Date(), null);
         resource.getVersions().put(resourceVersion.getVersion(), resourceVersion);
 
         // save Uploadfile
@@ -88,9 +95,9 @@ public class FileStorageProvider implements StorageProvider {
      * @see de.yaio.services.filestorage.modell.StorageProvider#update(java.lang.String, java.lang.String, java.io.InputStream)
      */
     @Override
-    public StorageResource update(String appId, String id, String origName, InputStream uploadFile) throws IOException {
+    public StorageResource update(String appId, String dmsId, String origName, InputStream uploadFile) throws IOException {
         // check dirStructure
-        File dirStructure = getDirStructure(appId, id);
+        File dirStructure = getDirStructure(appId, dmsId);
         if (!dirStructure.exists()) {
             throw new IOException("error document not exists HTTP: 404 Not Found");
         }
@@ -119,9 +126,9 @@ public class FileStorageProvider implements StorageProvider {
      * @see de.yaio.services.filestorage.modell.StorageProvider#resetToVersion(java.lang.String, java.lang.Integer)
      */
     @Override
-    public StorageResource resetToVersion(String appId, String id, Integer targetVersion) throws IOException {
+    public StorageResource resetToVersion(String appId, String dmsId, Integer targetVersion) throws IOException {
         // check dirStructure
-        File dirStructure = getDirStructure(appId, id);
+        File dirStructure = getDirStructure(appId, dmsId);
         if (!dirStructure.exists()) {
             throw new IOException("error document not exists HTTP: 404 Not Found");
         }
@@ -158,9 +165,9 @@ public class FileStorageProvider implements StorageProvider {
      * @see de.yaio.services.filestorage.modell.StorageProvider#delete(java.lang.String)
      */
     @Override
-    public void delete(String appId, String id) throws IOException {
+    public void delete(String appId, String dmsId) throws IOException {
         // check dirStructure
-        File dirStructure = getDirStructure(appId, id);
+        File dirStructure = getDirStructure(appId, dmsId);
         if (!dirStructure.exists()) {
             throw new IOException("error document not exists HTTP: 404 Not Found");
         }
@@ -186,9 +193,9 @@ public class FileStorageProvider implements StorageProvider {
      * @see de.yaio.services.filestorage.modell.StorageProvider#getMetaData(java.lang.String)
      */
     @Override
-    public StorageResource getMetaData(String appId, String id) throws IOException {
+    public StorageResource getMetaData(String appId, String dmsId) throws IOException {
         // check dirStructure
-        File dirStructure = getDirStructure(appId, id);
+        File dirStructure = getDirStructure(appId, dmsId);
         if (!dirStructure.exists()) {
             throw new IOException("error document not exists HTTP: 404 Not Found");
         }
@@ -202,9 +209,9 @@ public class FileStorageProvider implements StorageProvider {
      * @see de.yaio.services.filestorage.modell.StorageProvider#getMetaData(java.lang.String, java.lang.Integer)
      */
     @Override
-    public StorageResourceVersion getMetaData(String appId, String id, Integer requestedVersion) throws IOException {
+    public StorageResourceVersion getMetaData(String appId, String dmsId, Integer requestedVersion) throws IOException {
         // check dirStructure
-        File dirStructure = getDirStructure(appId, id);
+        File dirStructure = getDirStructure(appId, dmsId);
         if (!dirStructure.exists()) {
             throw new IOException("error document not exists HTTP: 404 Not Found");
         }
@@ -224,13 +231,13 @@ public class FileStorageProvider implements StorageProvider {
     }
 
     @Override
-    public Path getResource(String appId, String id, Integer requestedVersion) throws IOException {
-        return getResourceFile(appId, id, requestedVersion).toPath();
+    public Path getResource(String appId, String dmsId, Integer requestedVersion) throws IOException {
+        return getResourceFile(appId, dmsId, requestedVersion).toPath();
     }
 
-    public File getResourceFile(String appId, String id, Integer requestedVersion) throws IOException {
-        File dirStructure = getDirStructure(appId, id);
-        StorageResourceVersion resourceVersion = getMetaData(appId, id, requestedVersion);
+    public File getResourceFile(String appId, String dmsId, Integer requestedVersion) throws IOException {
+        File dirStructure = getDirStructure(appId, dmsId);
+        StorageResourceVersion resourceVersion = getMetaData(appId, dmsId, requestedVersion);
         return getResourceFile(dirStructure, resourceVersion.getResName());
     }
 
@@ -243,15 +250,41 @@ public class FileStorageProvider implements StorageProvider {
         newFileName = fileName.replaceAll("[^a-zA-Z0-9-.]", "_");
         return newFileName;
     }
-    protected String convertIdToDirStructure(String appId, String id) {
-        return storageBaseDir + File.separator + normalizeFileName(appId) + File.separator + normalizeFileName(id);
+
+    protected String convertDMSIdToDirStructure(String appId, String dmsId) throws IOException {
+        if (dmsId.startsWith(VERSION_ID_FS1)) {
+            return convertDMSIdToDirStructure_FS1(appId, dmsId);
+        }
+        throw new IOException("unknwon version of dmsId:" + dmsId);
     }
+    
+    protected String convertDMSIdToDirStructure_FS1(String appId, String dmsId) throws IOException {
+        if (!dmsId.startsWith(VERSION_ID_FS1)) {
+            throw new IOException("unknwon version of dmsId:" + dmsId);
+        }
+        
+        // set basepath
+        String basePath = storageBaseDir + File.separator + normalizeFileName(appId);
+        
+        // normalize id and create a structure of 4 chars per dir
+        String fileName = dmsId.substring(VERSION_ID_FS1.length());
+        fileName = normalizeFileName(fileName);
+        String[] separatedFileName = fileName.split("(?<=\\G....)");
+        fileName = StringUtils.arrayToDelimitedString(separatedFileName, File.separator);
+        
+        return basePath + File.separator + fileName;
+    }
+
     protected String convertToResourceFileName(String origName, int version) {
         return normalizeFileName("v" + version + "-" + origName);
     }
 
-    protected File getDirStructure(String appId, String id) {
-        return new File(convertIdToDirStructure(appId, id));
+    protected String convertSrcIdToDMSId_FS1(String srcId) {
+        return VERSION_ID_FS1 + Base64Utils.encodeToString(normalizeFileName(srcId).getBytes());
+    }
+    
+    protected File getDirStructure(String appId, String dmsId) throws IOException {
+        return new File(convertDMSIdToDirStructure(appId, dmsId));
     }
     protected File getMetaDataFile(File dirStructure) {
         return new File(dirStructure.getAbsolutePath() + File.separator + "metadata.json");

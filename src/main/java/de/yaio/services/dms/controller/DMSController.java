@@ -61,20 +61,20 @@ public class DMSController {
      * @FeatureResult                return the requested resource
      * @FeatureKeywords              Webservice
      * @param appId                  appId of the store
-     * @param id                     id of the resource
+     * @param dmsId                  id of the resource
      * @param version                version of the resource
      * @param response               servlet-response to set header-infos
      * @throws IOException           if resource not exists
      */
-    @RequestMapping(value="/get/{appId}/{id}/{version}", 
+    @RequestMapping(value="/get/{appId}/{dmsId}/{version}", 
                     method=RequestMethod.GET)
     public void handleFileDownloadById(@PathVariable("appId") String appId,
-                                       @PathVariable(value="id") String id,
+                                       @PathVariable(value="dmsId") String dmsId,
                                        @PathVariable(value="version") Integer version,
                                        HttpServletResponse response) throws IOException {
         try {
-            StorageResourceVersion metaData = storageProvider.getMetaData(appId, id, version);
-            File file = storageProvider.getResource(appId, id, version).toFile();
+            StorageResourceVersion metaData = storageProvider.getMetaData(appId, dmsId, version);
+            File file = storageProvider.getResource(appId, dmsId, version).toFile();
             String fileType = fileTypeMap.getContentType(file.getName());
 
             MediaType mimeType = MediaType.valueOf(fileType);
@@ -97,21 +97,21 @@ public class DMSController {
      * @FeatureResult                returns metadata of the requested resource version
      * @FeatureKeywords              Webservice
      * @param appId                  appId of the store
-     * @param id                     id of the resource
+     * @param dmsId                  id of the resource
      * @param version                version of the resource
      * @param response               servlet-response to set header-infos
      * @return                       metadata of the requested resource version
      * @throws IOException           if resource not exists
      */
-    @RequestMapping(value="/getmetaversion/{appId}/{id}/{version}", 
+    @RequestMapping(value="/getmetaversion/{appId}/{dmsId}/{version}", 
                     method=RequestMethod.GET)
     public @ResponseBody StorageResourceVersion handleFileMetaDataByVersion(@PathVariable("appId") String appId,
-                                                                            @PathVariable(value="id") String id,
+                                                                            @PathVariable(value="dmsId") String dmsId,
                                                                             @PathVariable(value="version") Integer version,
                                                                             HttpServletResponse response) throws IOException {
         StorageResourceVersion metaData = null;;
         try {
-            metaData = storageProvider.getMetaData(appId, id, version);
+            metaData = storageProvider.getMetaData(appId, dmsId, version);
         } catch (IOException e) {
             e.printStackTrace();
             response.setStatus(404);
@@ -127,19 +127,19 @@ public class DMSController {
      * @FeatureResult                returns metadata of the requested resource version
      * @FeatureKeywords              Webservice
      * @param appId                  appId of the store
-     * @param id                     id of the resource
+     * @param dmsId                  id of the resource
      * @param response               servlet-response to set header-infos
      * @return                       metadata of the requested resource version
      * @throws IOException           if resource not exists
      */
-    @RequestMapping(value="/getmeta/{appId}/{id}", 
+    @RequestMapping(value="/getmeta/{appId}/{dmsId}", 
                     method=RequestMethod.GET)
     public @ResponseBody StorageResource handleFileMetaDataById(@PathVariable("appId") String appId,
-                                                                @PathVariable(value="id") String id,
+                                                                @PathVariable(value="dmsId") String dmsId,
                                                                 HttpServletResponse response) throws IOException {
         StorageResource metaData = null;;
         try {
-            metaData = storageProvider.getMetaData(appId, id);
+            metaData = storageProvider.getMetaData(appId, dmsId);
         } catch (IOException e) {
             e.printStackTrace();
             response.setStatus(404);
@@ -155,7 +155,7 @@ public class DMSController {
      * @FeatureResult                save the resource
      * @FeatureKeywords              Webservice
      * @param appId                  appId of the store
-     * @param id                     id of the resource
+     * @param srcId                  srcId from client (based on that value the dmsId will be generated)
      * @param origFileName           original filename 
      * @param uploadFile             multipart with the upload-content
      * @param response               servlet-response to set header-infos
@@ -165,13 +165,13 @@ public class DMSController {
     @RequestMapping(value="/add", 
                     method=RequestMethod.POST)
     public @ResponseBody StorageResource handleFileUpload(@RequestParam("appId") String appId,
-                                                          @RequestParam("id") String id, 
+                                                          @RequestParam("srcId") String srcId, 
                                                           @RequestParam("origFileName") String origFileName,
                                                           @RequestParam("file") MultipartFile uploadFile,
                                                           HttpServletResponse response) throws IOException{
         if (!uploadFile.isEmpty()) {
             try {
-                StorageResource resource =  storageProvider.add(appId, id, origFileName, uploadFile.getInputStream());
+                StorageResource resource =  storageProvider.add(appId, srcId, origFileName, uploadFile.getInputStream());
                 return resource;
             } catch (IOException e) {
                 response.setStatus(409);
@@ -192,7 +192,7 @@ public class DMSController {
      * @FeatureResult                save the resource
      * @FeatureKeywords              Webservice
      * @param appId                  appId of the store
-     * @param id                     id of the resource
+     * @param dmsId                  dmsId of the resource
      * @param origFileName           original filename 
      * @param uploadFile             multipart with the upload-content
      * @param response               servlet-response to set header-infos
@@ -202,13 +202,13 @@ public class DMSController {
     @RequestMapping(value="/update", 
                     method=RequestMethod.POST)
     public @ResponseBody StorageResource handleFileUpdate(@RequestParam("appId") String appId,
-                                                          @RequestParam("id") String id, 
+                                                          @RequestParam("dmsId") String dmsId, 
                                                           @RequestParam("origFileName") String origFileName,
                                                           @RequestParam("file") MultipartFile uploadFile,
                                                           HttpServletResponse response) throws IOException{
         if (!uploadFile.isEmpty()) {
             try {
-                StorageResource resource =  storageProvider.update(appId, id, origFileName, uploadFile.getInputStream());
+                StorageResource resource =  storageProvider.update(appId, dmsId, origFileName, uploadFile.getInputStream());
                 return resource;
             } catch (IOException e) {
                 response.setStatus(404);

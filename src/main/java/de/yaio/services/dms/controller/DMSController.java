@@ -68,19 +68,18 @@ public class DMSController {
      */
     @RequestMapping(value="/get/{appId}/{dmsId}/{version}", 
                     method=RequestMethod.GET)
-    public void handleFileDownloadById(@PathVariable("appId") String appId,
-                                       @PathVariable(value="dmsId") String dmsId,
-                                       @PathVariable(value="version") Integer version,
-                                       HttpServletResponse response) throws IOException {
+    public void handleFileDownloadById(@PathVariable("appId") final String appId,
+                                       @PathVariable(value="dmsId") final String dmsId,
+                                       @PathVariable(value="version") final Integer version,
+                                       final HttpServletResponse response) throws IOException {
         try {
-            StorageResourceVersion metaData = storageProvider.getMetaData(appId, dmsId, version);
             File file = storageProvider.getResource(appId, dmsId, version).toFile();
             String fileType = fileTypeMap.getContentType(file.getName());
 
             MediaType mimeType = MediaType.valueOf(fileType);
             response.setContentType(mimeType.getType());
             response.setContentLength((new Long(file.length()).intValue()));
-            response.setHeader("content-Disposition", "attachment; filename=" + file.getName());// "attachment;filename=test.xls"
+            response.setHeader("content-Disposition", "attachment; filename=" + file.getName());
 
             // copy it to response's OutputStream
             IOUtils.copyLarge(new FileInputStream(file), response.getOutputStream());
@@ -105,10 +104,10 @@ public class DMSController {
      */
     @RequestMapping(value="/getmetaversion/{appId}/{dmsId}/{version}", 
                     method=RequestMethod.GET)
-    public @ResponseBody StorageResourceVersion handleFileMetaDataByVersion(@PathVariable("appId") String appId,
-                                                                            @PathVariable(value="dmsId") String dmsId,
-                                                                            @PathVariable(value="version") Integer version,
-                                                                            HttpServletResponse response) throws IOException {
+    public @ResponseBody StorageResourceVersion handleFileMetaDataByVersion(@PathVariable("appId") final String appId,
+                                                                            @PathVariable(value="dmsId") final String dmsId,
+                                                                            @PathVariable(value="version") final Integer version,
+                                                                            final HttpServletResponse response) throws IOException {
         StorageResourceVersion metaData = null;;
         try {
             metaData = storageProvider.getMetaData(appId, dmsId, version);
@@ -134,9 +133,9 @@ public class DMSController {
      */
     @RequestMapping(value="/getmeta/{appId}/{dmsId}", 
                     method=RequestMethod.GET)
-    public @ResponseBody StorageResource handleFileMetaDataById(@PathVariable("appId") String appId,
-                                                                @PathVariable(value="dmsId") String dmsId,
-                                                                HttpServletResponse response) throws IOException {
+    public @ResponseBody StorageResource handleFileMetaDataById(@PathVariable("appId") final String appId,
+                                                                @PathVariable(value="dmsId") final String dmsId,
+                                                                final HttpServletResponse response) throws IOException {
         StorageResource metaData = null;;
         try {
             metaData = storageProvider.getMetaData(appId, dmsId);
@@ -164,24 +163,24 @@ public class DMSController {
      */
     @RequestMapping(value="/add", 
                     method=RequestMethod.POST)
-    public @ResponseBody StorageResource handleFileUpload(@RequestParam("appId") String appId,
-                                                          @RequestParam("srcId") String srcId, 
-                                                          @RequestParam("origFileName") String origFileName,
-                                                          @RequestParam("file") MultipartFile uploadFile,
-                                                          HttpServletResponse response) throws IOException{
-        if (!uploadFile.isEmpty()) {
-            try {
-                StorageResource resource =  storageProvider.add(appId, srcId, origFileName, uploadFile.getInputStream());
-                return resource;
-            } catch (IOException e) {
-                response.setStatus(409);
-                response.getWriter().append("error while adding:" + e.getMessage());
-                e.printStackTrace();
-                return null;
-            }
-        } else {
+    public @ResponseBody StorageResource handleFileUpload(@RequestParam("appId") final String appId,
+                                                          @RequestParam("srcId") final String srcId, 
+                                                          @RequestParam("origFileName") final String origFileName,
+                                                          @RequestParam("file") final MultipartFile uploadFile,
+                                                          final HttpServletResponse response) throws IOException{
+        if (uploadFile.isEmpty()) {
             response.setStatus(400);
             response.getWriter().append("error while adding: uploadfile empty");
+            return null;
+        }
+
+        try {
+            StorageResource resource =  storageProvider.add(appId, srcId, origFileName, uploadFile.getInputStream());
+            return resource;
+        } catch (IOException e) {
+            response.setStatus(409);
+            response.getWriter().append("error while adding:" + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
@@ -201,24 +200,24 @@ public class DMSController {
      */
     @RequestMapping(value="/update", 
                     method=RequestMethod.POST)
-    public @ResponseBody StorageResource handleFileUpdate(@RequestParam("appId") String appId,
-                                                          @RequestParam("dmsId") String dmsId, 
-                                                          @RequestParam("origFileName") String origFileName,
-                                                          @RequestParam("file") MultipartFile uploadFile,
-                                                          HttpServletResponse response) throws IOException{
-        if (!uploadFile.isEmpty()) {
-            try {
-                StorageResource resource =  storageProvider.update(appId, dmsId, origFileName, uploadFile.getInputStream());
-                return resource;
-            } catch (IOException e) {
-                response.setStatus(404);
-                response.getWriter().append("error while updating:" + e.getMessage());
-                e.printStackTrace();
-                return null;
-            }
-        } else {
+    public @ResponseBody StorageResource handleFileUpdate(@RequestParam("appId") final String appId,
+                                                          @RequestParam("dmsId") final String dmsId, 
+                                                          @RequestParam("origFileName") final String origFileName,
+                                                          @RequestParam("file") final MultipartFile uploadFile,
+                                                          final HttpServletResponse response) throws IOException{
+        if (uploadFile.isEmpty()) {
             response.setStatus(400);
             response.getWriter().append("error while updating: uploadfile empty");
+            return null;
+        }
+
+        try {
+            StorageResource resource = storageProvider.update(appId, dmsId, origFileName, uploadFile.getInputStream());
+            return resource;
+        } catch (IOException e) {
+            response.setStatus(404);
+            response.getWriter().append("error while updating:" + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }

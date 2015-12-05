@@ -20,6 +20,7 @@ import java.io.IOException;
 import javax.activation.FileTypeMap;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -49,6 +50,8 @@ import de.yaio.services.dms.storage.StorageResourceVersion;
 @Controller
 @RequestMapping("${yaio-dms-service.baseurl}")
 public class DMSController {
+
+    private static final Logger LOGGER = Logger.getLogger(DMSController.class);
 
     @Autowired
     protected StorageProvider storageProvider;
@@ -86,7 +89,7 @@ public class DMSController {
         } catch (IOException e) {
             response.setStatus(404);
             response.getWriter().append("error while reading:" + e.getMessage());
-            e.printStackTrace();
+            LOGGER.warn("exception while reading appId: " + appId + " dmsId: " + dmsId + " version: " + version, e);
         }
     }
 
@@ -112,7 +115,7 @@ public class DMSController {
         try {
             metaData = storageProvider.getMetaData(appId, dmsId, version);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.warn("exception while reading appId: " + appId + " dmsId: " + dmsId + " version: " + version, e);
             response.setStatus(404);
             response.getWriter().append("error while reading:" + e.getMessage());
         }
@@ -140,7 +143,7 @@ public class DMSController {
         try {
             metaData = storageProvider.getMetaData(appId, dmsId);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.warn("exception while reading appId: " + appId + " dmsId: " + dmsId, e);
             response.setStatus(404);
             response.getWriter().append("error while reading:" + e.getMessage());
         }
@@ -180,7 +183,7 @@ public class DMSController {
         } catch (IOException e) {
             response.setStatus(409);
             response.getWriter().append("error while adding:" + e.getMessage());
-            e.printStackTrace();
+            LOGGER.warn("exception while adding appId: " + appId + " srcId: " + srcId + " origFileName: " + origFileName, e);
             return null;
         }
     }
@@ -217,7 +220,7 @@ public class DMSController {
         } catch (IOException e) {
             response.setStatus(404);
             response.getWriter().append("error while updating:" + e.getMessage());
-            e.printStackTrace();
+            LOGGER.warn("exception while updating appId: " + appId + " dmsId: " + dmsId + " origFileName: " + origFileName, e);
             return null;
         }
     }

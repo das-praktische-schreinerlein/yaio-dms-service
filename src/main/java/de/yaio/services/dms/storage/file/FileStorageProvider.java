@@ -18,13 +18,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Base64Utils;
 import org.springframework.util.StringUtils;
 
 import de.yaio.services.dms.storage.StorageProvider;
@@ -53,6 +56,8 @@ public class FileStorageProvider implements StorageProvider {
     
     @Value("${yaio-dms-service.storagebasedir}")
     protected String storageBaseDir;
+    
+    protected final DateFormat UIDF = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 
     @Override
     public StorageResource add(String appId, String srcId, String origName, InputStream uploadFile) throws IOException {
@@ -243,11 +248,29 @@ public class FileStorageProvider implements StorageProvider {
     }
 
     protected String convertToResourceFileName(String origName, int version) {
-        return storageUtils.normalizeFileName("v" + version + "-" + origName);
+        return "v" + version + "-" + storageUtils.normalizeFileName(origName);
     }
 
     protected String convertSrcIdToDMSId_FS1(String srcId) {
-        return VERSION_ID_FS1 + Base64Utils.encodeToString(storageUtils.normalizeFileName(srcId).getBytes());
+//        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//        try {
+//            OutputStream out = new DeflaterOutputStream(baos, new Deflater(Deflater.BEST_COMPRESSION));
+//            out.write(srcId.getBytes("UTF-8"));
+//            out.close();
+//        } catch (IOException e) {
+//            throw new AssertionError(e);
+//        }
+//        return VERSION_ID_FS1 + "DT" + UIDF.format(new Date()) + Base64Utils.encodeToString(baos.toByteArray());
+//        return VERSION_ID_FS1 + Base64Utils.encodeToString(storageUtils.normalizeFileName(srcId).getBytes());
+        
+        // update the current checksum with the specified array of bytes
+        Checksum checksum = new CRC32();
+        byte bytes[] = srcId.getBytes();
+        checksum.update(bytes, 0, bytes.length);
+         
+        // get the current checksum value
+        long checksumValue = checksum.getValue();
+        return VERSION_ID_FS1 + "DT" + UIDF.format(new Date()) + "_" + checksumValue;
     }
     
     protected File getDirStructure(String appId, String dmsId) throws IOException {

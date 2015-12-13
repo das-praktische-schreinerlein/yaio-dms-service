@@ -55,6 +55,11 @@ public class StorageUtils {
         
         // replace all not matching characters
         newFileName = fileName.replaceAll("[^a-zA-Z0-9-.]", "_");
+        
+        // split by 50
+        if (newFileName.length() > 90) {
+            newFileName = newFileName.substring(0,  43) + "___" + newFileName.substring(newFileName.length() - 43);
+        }
         return newFileName;
     }
 

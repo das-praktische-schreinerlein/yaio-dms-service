@@ -26,13 +26,6 @@ import org.springframework.context.annotation.Configuration;
 
 /** 
  * the dms-service as spring boot application
- * 
- * @FeatureDomain                Webservice
- * @package                      de.yaio.services.dms
- * @author                       Michael Schreiner <michael.schreiner@your-it-fellow.de>
- * @category                     dms
- * @copyright                    Copyright (c) 2014, Michael Schreiner
- * @license                      http://mozilla.org/MPL/2.0/ Mozilla Public License 2.0
  */
 @Configuration
 @EnableAutoConfiguration
@@ -41,9 +34,6 @@ public class DMSApplication {
 
     /** 
      * Main-method to start the application
-     * @FeatureDomain                CLI
-     * @FeatureResult                initialize the application
-     * @FeatureKeywords              CLI
      * @param args                   the command line arguments
      */
     public static void main(String[] args) {

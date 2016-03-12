@@ -39,13 +39,6 @@ import de.yaio.services.dms.storage.StorageResourceVersion;
 
 /** 
  * controller with endpoints to manage document-storage
- *  
- * @FeatureDomain                Webservice
- * @package                      de.yaio.services.dms.controller
- * @author                       Michael Schreiner <michael.schreiner@your-it-fellow.de>
- * @category                     document-storage
- * @copyright                    Copyright (c) 2014, Michael Schreiner
- * @license                      http://mozilla.org/MPL/2.0/ Mozilla Public License 2.0
  */
 @Controller
 @RequestMapping("${yaio-dms-service.baseurl}")
@@ -60,9 +53,6 @@ public class DMSController {
 
     /** 
      * download the resource
-     * @FeatureDomain                Webservice
-     * @FeatureResult                return the requested resource
-     * @FeatureKeywords              Webservice
      * @param appId                  appId of the store
      * @param dmsId                  id of the resource
      * @param version                version of the resource
@@ -95,9 +85,6 @@ public class DMSController {
 
     /** 
      * download the metadata of the requested resource version
-     * @FeatureDomain                Webservice
-     * @FeatureResult                returns metadata of the requested resource version
-     * @FeatureKeywords              Webservice
      * @param appId                  appId of the store
      * @param dmsId                  id of the resource
      * @param version                version of the resource
@@ -125,9 +112,6 @@ public class DMSController {
 
     /** 
      * download the metadata of the requested resource
-     * @FeatureDomain                Webservice
-     * @FeatureResult                returns metadata of the requested resource version
-     * @FeatureKeywords              Webservice
      * @param appId                  appId of the store
      * @param dmsId                  id of the resource
      * @param response               servlet-response to set header-infos
@@ -153,9 +137,6 @@ public class DMSController {
 
     /** 
      * add a resource to the store
-     * @FeatureDomain                Webservice
-     * @FeatureResult                save the resource
-     * @FeatureKeywords              Webservice
      * @param appId                  appId of the store
      * @param srcId                  srcId from client (based on that value the dmsId will be generated)
      * @param origFileName           original filename 
@@ -190,9 +171,6 @@ public class DMSController {
 
     /** 
      * updating a resource in the store
-     * @FeatureDomain                Webservice
-     * @FeatureResult                save the resource
-     * @FeatureKeywords              Webservice
      * @param appId                  appId of the store
      * @param dmsId                  dmsId of the resource
      * @param origFileName           original filename 

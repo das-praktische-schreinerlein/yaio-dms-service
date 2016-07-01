@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>de.yaio.services</groupId>
+        <artifactId>yaio-dms-service-pom-springboot</artifactId>
+        <version>0.4.0-SNAPSHOT</version>
+        <relativePath>../yaio-dms-service-pom-springboot/pom.xml</relativePath>
+    </parent>
+
+    <!-- the base -->
+    <groupId>de.yaio.services</groupId>
+    <artifactId>yaio-dms-service-api</artifactId>
+    <version>0.4.0-SNAPSHOT</version>
+    <name>yaio-dms-service-api</name>
+    <description>a POM for api</description>
+
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

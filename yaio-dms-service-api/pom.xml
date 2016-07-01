@@ -17,7 +17,11 @@
     <name>yaio-dms-service-api</name>
     <description>a POM for api</description>
 
-    <packaging>jar</packaging>
+    <!-- for copying into local repo> -->
+    <properties>
+        <packaging.type>jar</packaging.type>
+    </properties>
+    <packaging>${packaging.type}</packaging>
 
     <dependencies>
         <dependency>

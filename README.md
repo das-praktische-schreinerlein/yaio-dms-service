@@ -9,23 +9,13 @@ A webservice with document-management-functionality.
 - test it
 
         mvn install
-        mvn spring-boot:run
-        curl --user admin:secret -X POST http://localhost:8083/services/dms/add -F 'appId=yaio-playground' -F 'id=8767868768768768769' -F 'origFileName=testfile.xxx' -F 'file=@/cygdrive/d/tmp/readme.txt'
-        curl --user admin:secret -X POST http://localhost:8083/services/dms/update -F 'appId=yaio-playground' -F 'id=8767868768768768769' -F 'origFileName=testfile.xxx' -F 'file=@/cygdrive/d/tmp/readme.txt'
-        curl --user admin:secret -X GET http://localhost:8083/services/dms/getmeta/yaio-playground/8767868768768768769
-        curl --user admin:secret -X GET http://localhost:8083/services/dms/getmetaversion/yaio-playground/8767868768768768769/0
-        curl --user admin:secret -X GET http://localhost:8083/services/dms/get/yaio-playground/8767868768768768769/0
-
-- to build it as standalone-jar with all dependencies take a look at pom.xml
-
-        <!-- packaging - change it with "mvn package -Dpackaging.type=jar" -->
-        <packaging.type>jar</packaging.type>
-        <!-- assembly a jar with all dependencies - activate it with "mvn package -Dpackaging.assembly-phase=package" -->
-        <packaging.assembly-phase>none</packaging.assembly-phase>
-        <!-- shade to an ueber-jar - activate it with "mvn package -Dpackaging.shade-phase=package" -->
-        <packaging.shade-phase>none</packaging.shade-phase>
-        <!-- prepare for springboot - activate it with "mvn package -Dpackaging.springboot-phase=package" -->
-        <packaging.springboot-phase>none</packaging.springboot-phase>
+        java -Xmx768m -Xms128m -Dspring.config.location=file:config/dms-application.properties -Dlog4j.configuration=file:config/log4j.properties -cp "dist/yaio-dms-service-full.jar" de.yaio.services.dms.server.DMSApplication --config config/dms-application.properties
+        curl --user admin:secret -X POST http://localhost:8083/services/dms/add -F 'appId=yaio-playground' -F 'srcId=8767868768768768769' -F 'origFileName=testfile.xxx' -F 'file=@/cygdrive/d/tmp/readme.txt'
+        // get dmsId from response
+        curl --user admin:secret -X POST http://localhost:8083/services/dms/update -F 'appId=yaio-playground' -F 'dmsId=${dmsId}' -F 'origFileName=testfile.xxx' -F 'file=@/cygdrive/d/tmp/readme.txt'
+        curl --user admin:secret -X GET http://localhost:8083/services/dms/getmeta/yaio-playground/${dmsId}
+        curl --user admin:secret -X GET http://localhost:8083/services/dms/getmetaversion/yaio-playground/${dmsId}/0
+        curl --user admin:secret -X GET http://localhost:8083/services/dms/get/yaio-playground/${dmsId}/0
 
 # Thanks to
 - **Build-Tools**

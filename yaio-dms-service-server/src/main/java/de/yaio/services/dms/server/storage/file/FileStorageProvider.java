@@ -15,6 +15,7 @@ package de.yaio.services.dms.server.storage.file;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import de.yaio.commons.io.IOExceptionWithCause;
 import de.yaio.services.dms.api.model.*;
 import de.yaio.services.dms.server.storage.StorageProvider;
 import org.apache.commons.io.FileUtils;
@@ -24,8 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
@@ -58,16 +61,19 @@ public class FileStorageProvider implements StorageProvider {
     protected final DateFormat UIDF = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 
     @Override
-    public StorageResource add(String appId, String srcId, String origName, InputStream uploadFile) throws IOException {
+    public StorageResource add(String appId, String srcId, String origName, InputStream uploadFile)
+            throws IOExceptionWithCause, IOException {
         // create id
         String dmsId = convertSrcIdToDMSId_FS1(srcId);
 
         // check dirStructure
         File dirStructure = getDirStructure(appId, dmsId);
         if (dirStructure.exists()) {
-            throw new IOException("error document already exists HTTP: 409 Conflict");
+            throw new IOExceptionWithCause("conflict - metadataFile for resource already exists", dirStructure.getPath(),
+                    new FileAlreadyExistsException(dirStructure.getPath()));
         }
         dirStructure.mkdirs();
+
 
         // resName
         String resName = convertToResourceFileName(origName, 1);
@@ -87,11 +93,13 @@ public class FileStorageProvider implements StorageProvider {
     }
 
     @Override
-    public StorageResource update(String appId, String dmsId, String origName, InputStream uploadFile) throws IOException {
+    public StorageResource update(String appId, String dmsId, String origName, InputStream uploadFile)
+            throws IOExceptionWithCause, IOException {
         // check dirStructure
         File dirStructure = getDirStructure(appId, dmsId);
         if (!dirStructure.exists()) {
-            throw new IOException("error document not exists HTTP: 404 Not Found");
+            throw new IOExceptionWithCause("not found - metadataFile for resource not exists", dirStructure.getPath(),
+                    new FileNotFoundException(dirStructure.getPath()));
         }
 
         // read metadata
@@ -102,7 +110,8 @@ public class FileStorageProvider implements StorageProvider {
         resource.setLastChanged(new Date());
 
         String resName = convertToResourceFileName(origName, resource.getCurVersion());
-        StorageResourceVersion resourceVersion = new StorageResourceVersionImpl(resource.getCurVersion(), origName, resName, new Date());
+        StorageResourceVersion resourceVersion =
+                new StorageResourceVersionImpl(resource.getCurVersion(), origName, resName, new Date());
         resource.getVersions().put(resourceVersion.getVersion(), resourceVersion);
 
         // save Uploadfile
@@ -115,11 +124,13 @@ public class FileStorageProvider implements StorageProvider {
     }
 
     @Override
-    public StorageResource resetToVersion(String appId, String dmsId, Integer targetVersion) throws IOException {
+    public StorageResource resetToVersion(String appId, String dmsId, Integer targetVersion)
+            throws IOExceptionWithCause, IOException {
         // check dirStructure
         File dirStructure = getDirStructure(appId, dmsId);
         if (!dirStructure.exists()) {
-            throw new IOException("error document not exists HTTP: 404 Not Found");
+            throw new IOExceptionWithCause("not found - metadataFile for resource not exists", dirStructure.getPath(),
+                    new FileNotFoundException(dirStructure.getPath()));
         }
 
         // read metadata
@@ -128,7 +139,8 @@ public class FileStorageProvider implements StorageProvider {
         // check targetVersion
         StorageResourceVersion resourceVersion = resource.getVersion(targetVersion);
         if (resourceVersion == null) {
-            throw new IOException("error document not exists HTTP: 404 Not Found");
+            throw new IOExceptionWithCause("not found - targetVersion not exists", dirStructure.getPath(),
+                    new FileNotFoundException("appId:"+ appId + " dmsId:" + dmsId + " V:" + targetVersion));
         }
 
         // remove versions
@@ -151,11 +163,12 @@ public class FileStorageProvider implements StorageProvider {
     }
 
     @Override
-    public void delete(String appId, String dmsId) throws IOException {
+    public void delete(String appId, String dmsId) throws IOExceptionWithCause, IOException {
         // check dirStructure
         File dirStructure = getDirStructure(appId, dmsId);
         if (!dirStructure.exists()) {
-            throw new IOException("error document not exists HTTP: 404 Not Found");
+            throw new IOExceptionWithCause("not found - metadataFile for resource not exists", dirStructure.getPath(),
+                    new FileNotFoundException(dirStructure.getPath()));
         }
 
         // read metadata
@@ -176,11 +189,12 @@ public class FileStorageProvider implements StorageProvider {
     }
 
     @Override
-    public StorageResource getMetaData(String appId, String dmsId) throws IOException {
+    public StorageResource getMetaData(String appId, String dmsId) throws IOExceptionWithCause, IOException {
         // check dirStructure
         File dirStructure = getDirStructure(appId, dmsId);
         if (!dirStructure.exists()) {
-            throw new IOException("error document not exists HTTP: 404 Not Found");
+            throw new IOExceptionWithCause("not found - metadataFile for resource not exists", dirStructure.getPath(),
+                    new FileNotFoundException(dirStructure.getPath()));
         }
 
         // read metadata
@@ -189,11 +203,13 @@ public class FileStorageProvider implements StorageProvider {
     }
 
     @Override
-    public StorageResourceVersion getMetaData(String appId, String dmsId, Integer requestedVersion) throws IOException {
+    public StorageResourceVersion getMetaData(String appId, String dmsId, Integer requestedVersion)
+            throws IOExceptionWithCause, IOException {
         // check dirStructure
         File dirStructure = getDirStructure(appId, dmsId);
         if (!dirStructure.exists()) {
-            throw new IOException("error document not exists HTTP: 404 Not Found");
+            throw new IOExceptionWithCause("not found - metadataFile for resource not exists", dirStructure.getPath(),
+                    new FileNotFoundException(dirStructure.getPath()));
         }
 
         // read metadata
@@ -203,7 +219,8 @@ public class FileStorageProvider implements StorageProvider {
         }
         StorageResourceVersion resourceVersion = resource.getVersion(requestedVersion);
         if (resourceVersion == null) {
-            throw new IOException("error document not exists HTTP: 404 Not Found");
+            throw new IOExceptionWithCause("not found - resourceVersion not exists", dirStructure.getPath(),
+                    new FileNotFoundException("appId:"+ appId + " dmsId:" + dmsId + " V:" + requestedVersion));
         }
 
         // return resource
@@ -211,26 +228,30 @@ public class FileStorageProvider implements StorageProvider {
     }
 
     @Override
-    public Path getResource(String appId, String dmsId, Integer requestedVersion) throws IOException {
+    public Path getResource(String appId, String dmsId, Integer requestedVersion)
+            throws IOExceptionWithCause, IOException {
         return getResourceFile(appId, dmsId, requestedVersion).toPath();
     }
 
-    public File getResourceFile(String appId, String dmsId, Integer requestedVersion) throws IOException {
+    public File getResourceFile(String appId, String dmsId, Integer requestedVersion)
+            throws IOExceptionWithCause, IOException {
         File dirStructure = getDirStructure(appId, dmsId);
         StorageResourceVersion resourceVersion = getMetaData(appId, dmsId, requestedVersion);
         return getResourceFile(dirStructure, resourceVersion.getResName());
     }
 
-    protected String convertDMSIdToDirStructure(String appId, String dmsId) throws IOException {
+    protected String convertDMSIdToDirStructure(String appId, String dmsId) throws IOExceptionWithCause {
         if (dmsId.startsWith(VERSION_ID_FS1)) {
             return convertDMSIdToDirStructure_FS1(appId, dmsId);
         }
-        throw new IOException("unknwon version of dmsId:" + dmsId);
+        throw new IOExceptionWithCause("unknwon version of dmsId:", dmsId,
+                new FileNotFoundException("unknwon version of dmsId:" + dmsId));
     }
     
-    protected String convertDMSIdToDirStructure_FS1(String appId, String dmsId) throws IOException {
+    protected String convertDMSIdToDirStructure_FS1(String appId, String dmsId) throws IOExceptionWithCause {
         if (!dmsId.startsWith(VERSION_ID_FS1)) {
-            throw new IOException("unknwon version of dmsId:" + dmsId);
+            throw new IOExceptionWithCause("unknwon version of dmsId:", dmsId,
+                    new FileNotFoundException("unknwon version of dmsId:" + dmsId));
         }
         
         // set basepath
@@ -271,7 +292,7 @@ public class FileStorageProvider implements StorageProvider {
         return VERSION_ID_FS1 + "DT" + UIDF.format(new Date()) + "_" + checksumValue;
     }
     
-    protected File getDirStructure(String appId, String dmsId) throws IOException {
+    protected File getDirStructure(String appId, String dmsId) throws IOExceptionWithCause {
         return new File(convertDMSIdToDirStructure(appId, dmsId));
     }
     protected File getMetaDataFile(File dirStructure) {
@@ -287,9 +308,11 @@ public class FileStorageProvider implements StorageProvider {
     }
 
 
-    protected void saveMetaDataFile(StorageResource resource, File metadataFile, boolean create) throws IOException {
+    protected void saveMetaDataFile(StorageResource resource, File metadataFile, boolean create)
+            throws IOExceptionWithCause, IOException {
         if (create && metadataFile.exists()) {
-            throw new IOException("error metadata document already exists HTTP: 409 Conflict");
+            throw new IOExceptionWithCause("conflict - metadataFile for resource already exists", metadataFile.getPath(),
+                    new FileAlreadyExistsException(metadataFile.getPath()));
         }
         
         String metaJson = serializeMetaDataToJson(resource);
@@ -297,9 +320,10 @@ public class FileStorageProvider implements StorageProvider {
         FileUtils.writeStringToFile(metadataFile, metaJson);
     }
 
-    protected StorageResource readMetaDataFile(File metadataFile) throws IOException {
+    protected StorageResource readMetaDataFile(File metadataFile) throws IOExceptionWithCause, IOException {
         if (!metadataFile.exists()) {
-            throw new IOException("error metadata document not exists HTTP: 404 Conflict");
+            throw new IOExceptionWithCause("not found - metadataFile for resource not found", metadataFile.getPath(),
+                    new FileNotFoundException(metadataFile.getPath()));
         }
 
         String metaJson = FileUtils.readFileToString(metadataFile);

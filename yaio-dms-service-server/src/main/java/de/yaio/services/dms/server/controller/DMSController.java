@@ -13,6 +13,7 @@
  */
 package de.yaio.services.dms.server.controller;
 
+import de.yaio.commons.io.IOExceptionWithCause;
 import de.yaio.services.dms.api.model.StorageResource;
 import de.yaio.services.dms.api.model.StorageResourceVersion;
 import de.yaio.services.dms.server.storage.StorageProvider;
@@ -25,10 +26,18 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.activation.FileTypeMap;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 
 
 /** 
@@ -51,30 +60,26 @@ public class DMSController {
      * @param dmsId                  id of the resource
      * @param version                version of the resource
      * @param response               servlet-response to set header-infos
-     * @throws IOException           if resource not exists
+     * @throws IOExceptionWithCause  not exists
+     * @throws IOException           errors while reading
      */
     @RequestMapping(value="/get/{appId}/{dmsId}/{version}", 
                     method=RequestMethod.GET)
     public void handleFileDownloadById(@PathVariable("appId") final String appId,
                                        @PathVariable(value="dmsId") final String dmsId,
                                        @PathVariable(value="version") final Integer version,
-                                       final HttpServletResponse response) throws IOException {
-        try {
-            File file = storageProvider.getResource(appId, dmsId, version).toFile();
-            String fileType = fileTypeMap.getContentType(file.getName());
+                                       final HttpServletResponse response)
+            throws IOExceptionWithCause, IOException {
+        File file = storageProvider.getResource(appId, dmsId, version).toFile();
+        String fileType = fileTypeMap.getContentType(file.getName());
 
-            MediaType mimeType = MediaType.valueOf(fileType);
-            response.setContentType(mimeType.getType());
-            response.setContentLength((new Long(file.length()).intValue()));
-            response.setHeader("content-Disposition", "attachment; filename=" + file.getName());
+        MediaType mimeType = MediaType.valueOf(fileType);
+        response.setContentType(mimeType.getType());
+        response.setContentLength((new Long(file.length()).intValue()));
+        response.setHeader("content-Disposition", "attachment; filename=" + file.getName());
 
-            // copy it to response's OutputStream
-            IOUtils.copyLarge(new FileInputStream(file), response.getOutputStream());
-        } catch (IOException e) {
-            response.setStatus(404);
-            response.getWriter().append("error while reading:" + e.getMessage());
-            LOGGER.warn("exception while reading appId: " + appId + " dmsId: " + dmsId + " version: " + version, e);
-        }
+        // copy it to response's OutputStream
+        IOUtils.copyLarge(new FileInputStream(file), response.getOutputStream());
     }
 
     /** 
@@ -82,52 +87,34 @@ public class DMSController {
      * @param appId                  appId of the store
      * @param dmsId                  id of the resource
      * @param version                version of the resource
-     * @param response               servlet-response to set header-infos
      * @return                       metadata of the requested resource version
-     * @throws IOException           if resource not exists
+     * @throws IOExceptionWithCause  not exists
+     * @throws IOException           errors while reading
      */
     @RequestMapping(value="/getmetaversion/{appId}/{dmsId}/{version}", 
                     method=RequestMethod.GET)
     public @ResponseBody
     StorageResourceVersion handleFileMetaDataByVersion(@PathVariable("appId") final String appId,
                                                        @PathVariable(value="dmsId") final String dmsId,
-                                                       @PathVariable(value="version") final Integer version,
-                                                       final HttpServletResponse response) throws IOException {
-        StorageResourceVersion metaData = null;;
-        try {
-            metaData = storageProvider.getMetaData(appId, dmsId, version);
-        } catch (IOException e) {
-            LOGGER.warn("exception while reading appId: " + appId + " dmsId: " + dmsId + " version: " + version, e);
-            response.setStatus(404);
-            response.getWriter().append("error while reading:" + e.getMessage());
-        }
-
-        return metaData;
+                                                       @PathVariable(value="version") final Integer version)
+            throws IOExceptionWithCause, IOException {
+        return storageProvider.getMetaData(appId, dmsId, version);
     }
 
     /** 
      * download the metadata of the requested resource
      * @param appId                  appId of the store
      * @param dmsId                  id of the resource
-     * @param response               servlet-response to set header-infos
      * @return                       metadata of the requested resource version
-     * @throws IOException           if resource not exists
+     * @throws IOExceptionWithCause  not exists
+     * @throws IOException           errors while reading
      */
     @RequestMapping(value="/getmeta/{appId}/{dmsId}", 
                     method=RequestMethod.GET)
     public @ResponseBody StorageResource handleFileMetaDataById(@PathVariable("appId") final String appId,
-                                                                @PathVariable(value="dmsId") final String dmsId,
-                                                                final HttpServletResponse response) throws IOException {
-        StorageResource metaData = null;;
-        try {
-            metaData = storageProvider.getMetaData(appId, dmsId);
-        } catch (IOException e) {
-            LOGGER.warn("exception while reading appId: " + appId + " dmsId: " + dmsId, e);
-            response.setStatus(404);
-            response.getWriter().append("error while reading:" + e.getMessage());
-        }
-
-        return metaData;
+                                                                @PathVariable(value="dmsId") final String dmsId)
+            throws IOExceptionWithCause, IOException {
+        return storageProvider.getMetaData(appId, dmsId);
     }
 
     /** 
@@ -138,7 +125,8 @@ public class DMSController {
      * @param uploadFile             multipart with the upload-content
      * @param response               servlet-response to set header-infos
      * @return                       metadata of the new resource
-     * @throws IOException           if resource not exists
+     * @throws IOExceptionWithCause  already exists
+     * @throws IOException           errors while reading
      */
     @RequestMapping(value="/add", 
                     method=RequestMethod.POST)
@@ -146,22 +134,15 @@ public class DMSController {
                                                           @RequestParam("srcId") final String srcId, 
                                                           @RequestParam("origFileName") final String origFileName,
                                                           @RequestParam("file") final MultipartFile uploadFile,
-                                                          final HttpServletResponse response) throws IOException{
+                                                          final HttpServletResponse response)
+            throws IOExceptionWithCause, IOException{
         if (uploadFile.isEmpty()) {
             response.setStatus(400);
             response.getWriter().append("error while adding: uploadfile empty");
             return null;
         }
 
-        try {
-            StorageResource resource =  storageProvider.add(appId, srcId, origFileName, uploadFile.getInputStream());
-            return resource;
-        } catch (IOException e) {
-            response.setStatus(409);
-            response.getWriter().append("error while adding:" + e.getMessage());
-            LOGGER.warn("exception while adding appId: " + appId + " srcId: " + srcId + " origFileName: " + origFileName, e);
-            return null;
-        }
+        return storageProvider.add(appId, srcId, origFileName, uploadFile.getInputStream());
     }
 
     /** 
@@ -172,7 +153,8 @@ public class DMSController {
      * @param uploadFile             multipart with the upload-content
      * @param response               servlet-response to set header-infos
      * @return                       metadata of the new resource
-     * @throws IOException           if resource not exists
+     * @throws IOExceptionWithCause  not exists
+     * @throws IOException           errors while reading
      */
     @RequestMapping(value="/update", 
                     method=RequestMethod.POST)
@@ -180,21 +162,66 @@ public class DMSController {
                                                           @RequestParam("dmsId") final String dmsId, 
                                                           @RequestParam("origFileName") final String origFileName,
                                                           @RequestParam("file") final MultipartFile uploadFile,
-                                                          final HttpServletResponse response) throws IOException{
+                                                          final HttpServletResponse response)
+            throws IOExceptionWithCause, IOException{
         if (uploadFile.isEmpty()) {
             response.setStatus(400);
             response.getWriter().append("error while updating: uploadfile empty");
             return null;
         }
 
-        try {
-            StorageResource resource = storageProvider.update(appId, dmsId, origFileName, uploadFile.getInputStream());
-            return resource;
-        } catch (IOException e) {
-            response.setStatus(404);
-            response.getWriter().append("error while updating:" + e.getMessage());
-            LOGGER.warn("exception while updating appId: " + appId + " dmsId: " + dmsId + " origFileName: " + origFileName, e);
-            return null;
+        return storageProvider.update(appId, dmsId, origFileName, uploadFile.getInputStream());
+    }
+
+    @ExceptionHandler(IOExceptionWithCause.class)
+    public void handleCustomException(final HttpServletRequest request, final IOExceptionWithCause e,
+                                      final HttpServletResponse response) throws IOException {
+        LOGGER.info("Exception while running request:" + createRequestLogMessage(request), e);
+        if (FileAlreadyExistsException.class.isInstance(e.getCause())) {
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            response.getWriter().append("resource already exists");
+        } else if (FileNotFoundException.class.isInstance(e.getCause())) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().append("resource not found");
+        } else {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().append("error while serving request");
         }
+    }
+
+    @ExceptionHandler(value = {Exception.class, RuntimeException.class, IOException.class})
+    public void handleAllException(final HttpServletRequest request, final Exception e,
+                                   final HttpServletResponse response) {
+        LOGGER.info("Exception while running request:" + createRequestLogMessage(request), e);
+        response.setStatus(SC_INTERNAL_SERVER_ERROR);
+        try {
+            response.getWriter().append("exception while running dms for requested resource");
+        } catch (IOException ex) {
+            LOGGER.warn("exception while exceptionhandling", ex);
+        }
+    }
+
+    protected String createRequestLogMessage(HttpServletRequest request) {
+        return new StringBuilder("REST Request - ")
+                .append("[HTTP METHOD:")
+                .append(request.getMethod())
+                .append("] [URL:")
+                .append(request.getRequestURL())
+                .append("] [REQUEST PARAMETERS:")
+                .append(getRequestMap(request))
+                .append("] [REMOTE ADDRESS:")
+                .append(request.getRemoteAddr())
+                .append("]").toString();
+    }
+
+    private Map<String, String> getRequestMap(HttpServletRequest request) {
+        Map<String, String> typesafeRequestMap = new HashMap<>();
+        Enumeration<?> requestParamNames = request.getParameterNames();
+        while (requestParamNames.hasMoreElements()) {
+            String requestParamName = (String)requestParamNames.nextElement();
+            String requestParamValue = request.getParameter(requestParamName);
+            typesafeRequestMap.put(requestParamName, requestParamValue);
+        }
+        return typesafeRequestMap;
     }
 }

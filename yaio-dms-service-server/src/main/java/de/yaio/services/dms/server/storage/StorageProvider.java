@@ -13,6 +13,7 @@
  */
 package de.yaio.services.dms.server.storage;
 
+import de.yaio.commons.io.IOExceptionWithCause;
 import de.yaio.services.dms.api.model.StorageResource;
 import de.yaio.services.dms.api.model.StorageResourceVersion;
 
@@ -39,9 +40,11 @@ public interface StorageProvider {
      * @param origName               original name
      * @param uploadFile             inputstream with the data
      * @return                       returns the metadata of the target resource
-     * @throws IOException           if resource not exists
+     * @throws IOExceptionWithCause  already exists
+     * @throws IOException           errors while copying
      */
-    public StorageResource add(String appId, String srcId, String origName, InputStream uploadFile) throws IOException;
+    public StorageResource add(String appId, String srcId, String origName, InputStream uploadFile)
+            throws IOExceptionWithCause, IOException;
     
     /**
      * update the requested resource with that file
@@ -50,9 +53,11 @@ public interface StorageProvider {
      * @param origName               original name
      * @param uploadFile             inputstream with the data
      * @return                       returns the metadata of the target resource
-     * @throws IOException           if resource not exists
+     * @throws IOExceptionWithCause  not exists
+     * @throws IOException           errors while copying
      */
-    public StorageResource update(String appId, String dmsId, String origName, InputStream uploadFile) throws IOException;
+    public StorageResource update(String appId, String dmsId, String origName, InputStream uploadFile)
+            throws IOExceptionWithCause, IOException;
     
     /**
      * reset the requested resource to to this version
@@ -60,26 +65,30 @@ public interface StorageProvider {
      * @param dmsId                  dmsId of the resource
      * @param targetVersion          version of the resource
      * @return                       returns the metadata of the target resource
-     * @throws IOException           if resource not exists
+     * @throws IOExceptionWithCause  not exists
+     * @throws IOException           errors while deleting
      */
-    public StorageResource resetToVersion(String appId, String dmsId, Integer targetVersion) throws IOException;
+    public StorageResource resetToVersion(String appId, String dmsId, Integer targetVersion)
+            throws IOExceptionWithCause, IOException;
     
     /**
      * delete all data of the requested resource
      * @param appId                  the appId of the store
      * @param dmsId                  dmsId of the resource
-     * @throws IOException           if resource not exists
+     * @throws IOExceptionWithCause  not exists
+     * @throws IOException           errors while deleting
      */
-    public void delete(String appId, String dmsId) throws IOException;
+    public void delete(String appId, String dmsId) throws IOExceptionWithCause, IOException;
     
     /**
      * returns metadata of the requested resource
      * @param appId                  the appId of the store
      * @param dmsId                  dmsId of the resource
      * @return                       returns the metadata of the requested resource
-     * @throws IOException           if resource not exists
+     * @throws IOExceptionWithCause  not exists
+     * @throws IOException           errors while reading
      */
-    public StorageResource getMetaData(String appId, String dmsId) throws IOException;
+    public StorageResource getMetaData(String appId, String dmsId) throws IOExceptionWithCause, IOException;
     
     /**
      * returns metadata of the requested resource-version
@@ -87,9 +96,11 @@ public interface StorageProvider {
      * @param dmsId                  dmsId of the resource
      * @param requestedVersion       version of the resource
      * @return                       returns the metadata of the requested resource
-     * @throws IOException           if resource not exists
+     * @throws IOExceptionWithCause  not exists
+     * @throws IOException           errors while reading
      */
-    public StorageResourceVersion getMetaData(String appId, String dmsId, Integer requestedVersion) throws IOException;
+    public StorageResourceVersion getMetaData(String appId, String dmsId, Integer requestedVersion)
+            throws IOExceptionWithCause, IOException;
     
     /**
      * returns the path of the requested resource
@@ -97,7 +108,9 @@ public interface StorageProvider {
      * @param dmsId                  dmsId of the resource
      * @param requestedVersion       version of the resource
      * @return                       returns the path of the requested resource
-     * @throws IOException           if resource not exists
+     * @throws IOExceptionWithCause  not exists
+     * @throws IOException           errors while reading
      */
-    public Path getResource(String appId, String dmsId, Integer requestedVersion) throws IOException;
+    public Path getResource(String appId, String dmsId, Integer requestedVersion)
+            throws IOExceptionWithCause, IOException;
 }

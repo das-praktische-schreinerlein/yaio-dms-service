@@ -13,8 +13,8 @@
  */
 package de.yaio.services.dms.server.configuration;
 
-import java.util.Properties;
-
+import de.yaio.commons.io.IOExceptionWithCause;
+import de.yaio.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +29,8 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
+
+import java.util.Properties;
 
 /** 
  * secure the dms-service
@@ -65,9 +67,14 @@ public class DMSWebSecurityConfig extends WebSecurityConfigurerAdapter {
             if (! flgSecureByMyOwn) {
                 return;
             }
-            
+
             // secure it by my own
-            Properties users = Configurator.readProperties(usersFile);
+            Properties users;
+            try {
+                users = IOUtils.getInstance().readProperties(usersFile);
+            } catch (IOExceptionWithCause ex) {
+                throw new IllegalArgumentException("cant read propertyFile for AuthenticationManager", ex);
+            }
             InMemoryUserDetailsManager im = new InMemoryUserDetailsManager(users);
             auth.userDetailsService(im);
         }

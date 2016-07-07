@@ -7,4 +7,5 @@ dependency-reduced-pom.xml
 /.idea/
 *.iml
 /dist
+*pom.xml.versionsBackup
 

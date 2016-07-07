@@ -25,19 +25,22 @@ import java.io.IOException;
 /** 
  * services for document-storage
  *  
- * @FeatureDomain                service
- * @package                      de.yaio.services.dms.controller
  * @author                       Michael Schreiner <michael.schreiner@your-it-fellow.de>
- * @category                     DMS
- * @copyright                    Copyright (c) 2014, Michael Schreiner
- * @license                      http://mozilla.org/MPL/2.0/ Mozilla Public License 2.0
  */
-@Service
 public class StorageFactory {
-    // Jackson
-    @Autowired
-    protected ObjectMapper mapper;
-    
+
+    protected ObjectMapper storageResourceMapper;
+    protected ObjectMapper storageResourceVersionMapper;
+
+    public static StorageFactory createStorageFactory() {
+        return new StorageFactory();
+    }
+
+    protected StorageFactory() {
+        storageResourceMapper = createStorageResourceMapper();
+        storageResourceVersionMapper = createStorageResourceVersionMapper();
+    }
+
     /**
      * parse StorageResource from json
      * @param metaJson               json to be parsed 
@@ -45,21 +48,7 @@ public class StorageFactory {
      * @throws IOException           if deserialization fails
      */
     public StorageResource parseStorageResourceFromJson(String metaJson) throws IOException {
-        // configure
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
-        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-        
-        // add deserializer
-        SimpleModule module = new SimpleModule("StorageResourceVersionDeserializer", new Version(1, 0, 0, null));
-        StorageResourceVersionDeserializer storageResourceVersionDeserializer = new StorageResourceVersionDeserializer();
-        StorageResourceDeserializer storageResourceDeserializer = new StorageResourceDeserializer();
-        module.addDeserializer(StorageResourceVersion.class, storageResourceVersionDeserializer);
-        module.addDeserializer(StorageResource.class, storageResourceDeserializer);
-
-        mapper.registerModule(module);
-        StorageResource resource = mapper.readValue(metaJson, StorageResourceImpl.class);
-        return resource;
+        return storageResourceMapper.readValue(metaJson, StorageResourceImpl.class);
     }
 
     /**
@@ -69,18 +58,44 @@ public class StorageFactory {
      * @throws IOException           if deserialization fails
      */
     public StorageResourceVersion parseStorageResourceVersionFromJson(String metaJson) throws IOException {
+        return storageResourceVersionMapper.readValue(metaJson, StorageResourceVersionImpl.class);
+    }
+
+    protected ObjectMapper createStorageResourceMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+
         // configure
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
         mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-        
+
+        // add deserializer
+        SimpleModule module = new SimpleModule("StorageResourceVersionDeserializer", new Version(1, 0, 0, null));
+        StorageResourceVersionDeserializer storageResourceVersionDeserializer = new StorageResourceVersionDeserializer();
+        StorageResourceDeserializer storageResourceDeserializer = new StorageResourceDeserializer();
+        module.addDeserializer(StorageResourceVersion.class, storageResourceVersionDeserializer);
+        module.addDeserializer(StorageResource.class, storageResourceDeserializer);
+
+        mapper.registerModule(module);
+
+        return mapper;
+    }
+
+    protected ObjectMapper createStorageResourceVersionMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+
+        // configure
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+
         // add deserializer
         SimpleModule module = new SimpleModule("StorageResourceVersionDeserializer", new Version(1, 0, 0, null));
         StorageResourceVersionDeserializer storageResourceVersionDeserializer = new StorageResourceVersionDeserializer();
         module.addDeserializer(StorageResourceVersion.class, storageResourceVersionDeserializer);
 
         mapper.registerModule(module);
-        StorageResourceVersion resource = mapper.readValue(metaJson, StorageResourceVersionImpl.class);
-        return resource;
+
+        return mapper;
     }
 }

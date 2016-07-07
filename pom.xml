@@ -28,6 +28,7 @@
         <module>yaio-dms-service-pom-springboot</module>
         <module>yaio-dms-service-pom-springboot-web</module>
         <module>yaio-dms-service-api</module>
+        <module>yaio-dms-service-client</module>
         <module>yaio-dms-service-server</module>
         <module>yaio-dms-service-full</module>
     </modules>

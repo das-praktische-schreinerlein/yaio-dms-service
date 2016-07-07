@@ -52,8 +52,11 @@ public class FileStorageProvider implements StorageProvider {
     protected ObjectMapper mapper;
 
     // StorageFactory
-    @Autowired
-    protected StorageFactory storageFactorx;
+    protected StorageFactory storageUtils;
+    
+    public FileStorageProvider() {
+        storageUtils = StorageFactory.createStorageFactory();
+    }
     
     @Value("${yaio-dms-service.storagebasedir}")
     protected String storageBaseDir;
@@ -328,7 +331,7 @@ public class FileStorageProvider implements StorageProvider {
 
         String metaJson = FileUtils.readFileToString(metadataFile);
         
-        return storageFactorx.parseStorageResourceFromJson(metaJson);
+        return storageUtils.parseStorageResourceFromJson(metaJson);
     }
 
     /**

@@ -63,12 +63,6 @@
         <!--  versions -->
         <java.version>1.7</java.version>
 
-        <yaio-dms-service-pom-parent.version>0.4.0-SNAPSHOT</yaio-dms-service-pom-parent.version>
-        <yaio-dms-service-api.version>0.4.0-SNAPSHOT</yaio-dms-service-api.version>
-        <yaio-dms-service-pom-springboot.version>0.4.0-SNAPSHOT</yaio-dms-service-pom-springboot.version>
-        <yaio-dms-service-pom-springboot-web.version>0.4.0-SNAPSHOT</yaio-dms-service-pom-springboot-web.version>
-        <yaio-dms-service-server.version>0.4.0-SNAPSHOT</yaio-dms-service-server.version>
-
         <!--
           ##################
           # dependency versions

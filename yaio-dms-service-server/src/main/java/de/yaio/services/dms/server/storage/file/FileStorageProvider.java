@@ -342,10 +342,10 @@ public class FileStorageProvider implements StorageProvider {
     protected String normalizeFileName(String fileName) {
         String newFileName = fileName;
         // replace all . but the last as extension
-        newFileName = fileName.replaceAll("\\.(?=.*\\.)", "_");
+        newFileName = newFileName.replaceAll("\\.(?=.*\\.)", "_");
 
         // replace all not matching characters
-        newFileName = fileName.replaceAll("[^a-zA-Z0-9-.]", "_");
+        newFileName = newFileName.replaceAll("[^a-zA-Z0-9-.]", "_");
 
         // split by 50
         if (newFileName.length() > 90) {

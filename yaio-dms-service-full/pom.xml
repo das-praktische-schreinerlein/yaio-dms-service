@@ -6,14 +6,14 @@
     <parent>
         <groupId>de.yaio.services</groupId>
         <artifactId>yaio-dms-service-pom-springboot-web</artifactId>
-        <version>0.4.1</version>
+        <version>0.4.2-RELEASE</version>
         <relativePath>../yaio-dms-service-pom-springboot-web/pom.xml</relativePath>
     </parent>
 
     <!-- the base -->
     <groupId>de.yaio.services</groupId>
     <artifactId>yaio-dms-service-full</artifactId>
-    <version>0.4.1</version>
+    <version>0.4.2-RELEASE</version>
     <name>yaio-dms-service-full</name>
     <description>the full service</description>
 
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>de.yaio.services</groupId>
             <artifactId>yaio-dms-service-server</artifactId>
-            <version>0.4.1</version>
+            <version>0.4.2-RELEASE</version>
         </dependency>
     </dependencies>
 
@@ -78,7 +78,7 @@
                 <executions>
                     <execution>
                         <id>copy-jar</id>
-                        <phase>install</phase>
+                        <phase>package</phase>
                         <configuration>
                             <target>
                                 <copy file="${yaioBaseDir}/${project.artifactId}/target/${project.artifactId}-${project.version}.jar" tofile="${yaioBaseDir}/dist/${project.artifactId}-${project.version}.jar" />
